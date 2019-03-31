@@ -2,6 +2,18 @@ import numpy
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Button, CheckButtons, TextBox
 import pyperclip
+from astropy.io import fits
+from astropy.table import Table
+
+def load_spiders_df(path):
+
+    hdul = fits.open(path)
+    data_tbl = Table(hdul[1].data)
+    spiders_df = data_tbl.to_pandas()
+    spiders_BLAGN_df = spiders_df[ (spiders_df['CLASS_BEST'] == 'BLAGN ') | (spiders_df['CLASS_BEST'] == 'QSO   ')].copy()
+    #print(spiders_BLAGN_df.shape)
+    #print(spiders_BLAGN_df.head())
+    return spiders_BLAGN_df
 
 
 def get_pmf(plate_mjd_fiber):
@@ -20,10 +32,11 @@ def get_sdss_link(plate_mjd_fiber):
 
 class inspec():
 
-    def __init__(self, path_specs, path_wave, spiders_BLAGN_df):
+    def __init__(self, path_specs, path_wave, path_spider_fits):
 
         self.specs = numpy.load(path_specs)
         self.wave = numpy.load(path_wave)
+        spiders_BLAGN_df = load_spiders_df(path_spider_fits)
         self.n_objects = self.specs.shape[0]
 
 
