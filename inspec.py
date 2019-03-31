@@ -26,41 +26,53 @@ class inspec():
         self.wave = numpy.load(path_wave)
         self.n_objects = self.specs.shape[0]
 
-        self.ind = 0
+
 
         self.plate_mjd_fiber = spiders_BLAGN_df[['plate', 'MJD', 'fiberID']]
-        sdss_link = get_sdss_link(self.plate_mjd_fiber.iloc[0])
-        pyperclip.copy(sdss_link)
 
-        fig, self.ax = plt.subplots(figsize = (10,5))
-        plt.subplots_adjust(bottom=0.3)
-        self.l, = self.ax.plot(self.wave, numpy.log(1 + self.specs[0]), lw=2)
 
-        plate, mjd, fiber = get_pmf(self.plate_mjd_fiber.iloc[0])
-        self.ax.set_title('{}, {}, {}'.format(plate,mjd,fiber))
+
 
         self.labels = ('Can fit', 'Can fit maybe', 'Complex broad profile',  'No Narrow Hb', 'Do not use')
         self.n_labels = len(self.labels)
+        self.ind = 0
         try:
             self.choices = numpy.load('choices.npy')
+
+            for o in range(self.n_objects):
+                if numpy.sum(self.choices[o]) > 0:
+                    pass
+                else:
+                    self.ind = o
+                    break
         except:
             self.choices = numpy.zeros((self.n_objects, self.n_labels), dtype=int)
 
-        axprev = plt.axes([0.4, 0.05, 0.1, 0.1])
-        axnext = plt.axes([0.51, 0.05, 0.1, 0.1])
+        fig, self.ax = plt.subplots(figsize = (10,7))
+        plt.subplots_adjust(bottom=0.5)
+        self.l, = self.ax.plot(self.wave, numpy.log(1 + self.specs[self.ind]), lw=2)
+
+        plate, mjd, fiber = get_pmf(self.plate_mjd_fiber.iloc[self.ind])
+        self.ax.set_title('{}, {}, {}'.format(plate,mjd,fiber))
+
+        sdss_link = get_sdss_link(self.plate_mjd_fiber.iloc[self.ind])
+        pyperclip.copy(sdss_link)
+
+        axprev = plt.axes([0.25, 0.2, 0.1, 0.1])
+        axnext = plt.axes([0.37, 0.2, 0.1, 0.1])
         self.bnext = Button(axnext, 'Next')
         self.bnext.on_clicked(self.next_obj)
 
         self.bprev = Button(axprev, 'Previous')
         self.bprev.on_clicked(self.prev_obj)
 
-        self.rax = plt.axes([0.1, 0.05, 0.25, 0.2])
-        self.check = CheckButtons(self.rax, self.labels, None)
+        self.rax = plt.axes([0.5, 0.05, 0.25, 0.4])
+        self.check = CheckButtons(self.rax, self.labels, self.choices[self.ind])
         self.check.on_clicked(self.update)
 
 
-        self.axtext = plt.axes([0.4, 0.17, 0.25, 0.05])
-        self.textbox = TextBox(self.axtext, 'Go to', '0')
+        self.axtext = plt.axes([0.23, 0.32, 0.25, 0.05])
+        self.textbox = TextBox(self.axtext, 'Go to:', str(self.ind))
         self.textbox.on_submit(self.go_to_obj)
 
         self.xlim = (4600,5100)
