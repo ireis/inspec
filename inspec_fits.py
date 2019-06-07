@@ -36,13 +36,17 @@ class inspec():
     def __init__(self, run_name, path_spider_fits):
 
         self.run_name = run_name
-        self.objects_inds = numpy.load('{}.npy'.format(run_name))
+        if not self.run_name == 'all_objects':
+            self.objects_inds = numpy.load('{}.npy'.format(run_name))
+        else:
+            self.choices = numpy.load('choices_fits.npy')
+            self.objects_inds = numpy.where(self.choices.sum(axis=1) == 0)[0]
 
         spiders_BLAGN_df = load_spiders_df(path_spider_fits)
         self.n_objects = spiders_BLAGN_df.shape[0]
         self.plate_mjd_fiber = spiders_BLAGN_df[['plate', 'MJD', 'fiberID']]
 
-        self.labels = ('Good fit', 'Bad fit - try again', 'Bad fit - forget it')
+        self.labels = ('Good fit', 'Bad fit', 'No narrow Hb')
         self.n_labels = len(self.labels)
         self.i = 0
         self.ind = self.objects_inds[self.i]
@@ -61,8 +65,11 @@ class inspec():
         fig, self.ax = plt.subplots(figsize = (10,7))
         plt.subplots_adjust(bottom=0.41)
         figure_file_name = "fit_results/figures/finalfit_{}_idx_{}.png".format(self.run_name,self.ind)
-        img=mpimg.imread(figure_file_name)
-        self.ax.imshow(img, aspect='auto')
+        try:
+            img=mpimg.imread(figure_file_name)
+            self.ax.imshow(img, aspect='auto')
+        except:
+            pass
 
         plate, mjd, fiber = get_pmf(self.plate_mjd_fiber.iloc[self.ind])
         self.ax.set_title('{}, {}, {}'.format(plate,mjd,fiber))
@@ -80,7 +87,7 @@ class inspec():
 
         self.rax = plt.axes([0.5, 0.05, 0.25, 0.3])
         if numpy.sum(self.choices[self.ind]) == 0:
-            self.check = CheckButtons(self.rax, self.labels, (1,0,0))
+            self.check = CheckButtons(self.rax, self.labels, (0,1,0))
         else:
             self.check = CheckButtons(self.rax, self.labels, self.choices[self.ind])
         self.check.on_clicked(self.update)
@@ -99,8 +106,11 @@ class inspec():
         self.ax.clear()
 
         figure_file_name = "fit_results/figures/finalfit_{}_idx_{}.png".format(self.run_name,self.ind)
-        img=mpimg.imread(figure_file_name)
-        self.ax.imshow(img, aspect='auto')
+        try:
+            img=mpimg.imread(figure_file_name)
+            self.ax.imshow(img, aspect='auto')
+        except:
+            pass
         plate, mjd, fiber = get_pmf(self.plate_mjd_fiber.iloc[i])
         self.ax.set_title('{}, {}, {}'.format(plate,mjd,fiber))
         #self.ax.set_title('')
@@ -108,7 +118,7 @@ class inspec():
         self.rax.clear()
         #self.rax = plt.axes([0.1, 0.05, 0.25, 0.2])
         if numpy.sum(self.choices[self.ind]) == 0:
-            self.check = CheckButtons(self.rax, self.labels, (1,0,0))
+            self.check = CheckButtons(self.rax, self.labels, (0,1,0))
         else:
             self.check = CheckButtons(self.rax, self.labels, self.choices[self.ind])
 

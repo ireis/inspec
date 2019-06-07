@@ -63,7 +63,8 @@ class inspec():
 
         fig, self.ax = plt.subplots(figsize = (10,7))
         plt.subplots_adjust(bottom=0.5)
-        self.l, = self.ax.plot(self.wave, numpy.log(1 + self.specs[self.ind]), lw=2)
+        #self.l, = self.ax.plot(self.wave, numpy.log(1 + self.specs[self.ind]), lw=2)
+        self.l, = self.ax.plot(self.wave, self.specs[self.ind], lw=2)
 
         plate, mjd, fiber = get_pmf(self.plate_mjd_fiber.iloc[self.ind])
         self.ax.set_title('{}, {}, {}'.format(plate,mjd,fiber))
@@ -97,7 +98,8 @@ class inspec():
     def new_obj(self, i):
         self.ax.clear()
 
-        self.l, = self.ax.plot(self.wave, numpy.log(1 + self.specs[i]), lw=2)
+        #self.l, = self.ax.plot(self.wave, numpy.log(1 + self.specs[i]), lw=2)
+        self.l, = self.ax.plot(self.wave,  self.specs[i], lw=2)
 
         self.ax.set_xlim(self.xlim)
         plate, mjd, fiber = get_pmf(self.plate_mjd_fiber.iloc[i])
